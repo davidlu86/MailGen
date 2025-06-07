@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,14 +22,29 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Ensure the app takes up at least the full screen height */
+        html, body {
+            height: 100%;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            flex-grow: 1;
+        }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
 
     <div class="container mx-auto p-4 md:p-8 max-w-2xl">
-        <header class="text-center mb-8">
+        <header class="text-center mb-8 relative">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">Gmailnator API Client</h1>
             <p class="text-gray-600 dark:text-gray-400 mt-2">Generate temporary Gmail accounts.</p>
+            <button id="theme-toggle" class="absolute top-0 right-0 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700">
+                <svg id="theme-icon-light" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg id="theme-icon-dark" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
         </header>
 
         <main>
@@ -37,13 +52,13 @@
             <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-8">
                 <label for="apiKey" class="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">RapidAPI Key</label>
                 <input type="password" id="apiKey" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your RapidAPI Key here">
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Your API key is saved in your browser's local storage for convenience. It is not sent anywhere else.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Your API key is saved in your browser's local storage for convenience.</p>
             </div>
 
             <div class="flex justify-center">
                 <!-- Generate Email Section -->
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md w-full">
-                    <h2 class="text-2xl font-semibold mb-4">1. Generate Email</h2>
+                    <h2 class="text-2xl font-semibold mb-4">Generate Emails</h2>
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -69,9 +84,23 @@
                     </div>
                     <div id="generatedEmailContainer" class="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg hidden">
                         <div id="emailList" class="space-y-2"></div>
+                         <div id="resultActions" class="mt-4 flex gap-2">
+                             <button id="copyAllBtn" class="flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 text-sm">Copy All</button>
+                             <button id="clearResultsBtn" class="flex-1 bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 text-sm">Clear Results</button>
+                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- History Section -->
+            <div id="historyContainer" class="mt-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold">History</h2>
+                    <button id="clearHistoryBtn" class="text-sm text-red-500 hover:underline">Clear History</button>
+                </div>
+                <div id="historyList" class="space-y-2"></div>
+            </div>
+
 
             <!-- Alert Modal -->
             <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
@@ -94,26 +123,53 @@
         const emailCountSelect = document.getElementById('emailCount');
         const generatedEmailContainer = document.getElementById('generatedEmailContainer');
         const emailListDiv = document.getElementById('emailList');
+        const copyAllBtn = document.getElementById('copyAllBtn');
+        const clearResultsBtn = document.getElementById('clearResultsBtn');
         
+        const historyContainer = document.getElementById('historyContainer');
+        const historyList = document.getElementById('historyList');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
         const alertModal = document.getElementById('alertModal');
         const alertTitle = document.getElementById('alertTitle');
         const alertBody = document.getElementById('alertBody');
         const closeAlertBtn = document.getElementById('closeAlertBtn');
+        
+        const themeToggle = document.getElementById('theme-toggle');
+        const lightIcon = document.getElementById('theme-icon-light');
+        const darkIcon = document.getElementById('theme-icon-dark');
 
-        // --- API Configuration ---
+        // --- API & Storage Configuration ---
         const API_HOST = 'gmailnator.p.rapidapi.com';
         const API_KEY_STORAGE_ID = 'gmailnatorApiKey';
+        const HISTORY_STORAGE_ID = 'gmailnatorHistory';
+        let currentEmails = [];
 
-        // --- Load API Key on Page Start ---
-        const savedApiKey = localStorage.getItem(API_KEY_STORAGE_ID);
-        if (savedApiKey) {
-            apiKeyInput.value = savedApiKey;
+        // --- Initial Load ---
+        function initialize() {
+            // Load theme
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+            updateThemeIcon(savedTheme);
+
+            // Load API key
+            const savedApiKey = localStorage.getItem(API_KEY_STORAGE_ID);
+            if (savedApiKey) {
+                apiKeyInput.value = savedApiKey;
+            }
+
+            // Load history
+            loadAndRenderHistory();
         }
 
         // --- Event Listeners ---
         generateBtn.addEventListener('click', handleGenerateEmail);
         closeAlertBtn.addEventListener('click', () => alertModal.classList.add('hidden'));
-
+        clearResultsBtn.addEventListener('click', clearResults);
+        copyAllBtn.addEventListener('click', handleCopyAll);
+        clearHistoryBtn.addEventListener('click', handleClearHistory);
+        themeToggle.addEventListener('click', toggleTheme);
+        
         // --- Functions ---
         
         function showAlert(title, message) {
@@ -122,9 +178,6 @@
             alertModal.classList.remove('hidden');
         }
 
-        /**
-         * Fetches new email addresses from the Gmailnator API using the correct endpoints.
-         */
         async function handleGenerateEmail() {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
@@ -133,13 +186,10 @@
             }
 
             setLoading(generateBtn, true);
-            generatedEmailContainer.classList.add('hidden');
-            emailListDiv.innerHTML = '';
+            clearResults();
 
             const count = parseInt(emailCountSelect.value, 10);
             const type = emailTypeSelect.value;
-            
-            // Simplified options array since 'shuffled' is removed
             const optionsArray = [parseInt(type, 10)];
             
             const isBulk = count > 1;
@@ -150,11 +200,7 @@
 
             const fetchOptions = {
                 method: 'POST',
-                headers: {
-                    'content-type': 'application/json',
-                    'X-RapidAPI-Key': apiKey,
-                    'X-RapidAPI-Host': API_HOST
-                },
+                headers: { 'content-type': 'application/json', 'X-RapidAPI-Key': apiKey, 'X-RapidAPI-Host': API_HOST },
                 body: body
             };
 
@@ -175,27 +221,27 @@
                 } else if (!isBulk && data.email) {
                     emails = [data.email];
                 } else {
-                    console.error("Unexpected API Response:", data);
                     throw new Error('Invalid response structure from API.');
                 }
 
                 if (emails.length > 0) {
+                    currentEmails = emails; // Store current batch
                     displayGeneratedEmails(emails);
                     generatedEmailContainer.classList.remove('hidden');
+                    saveToHistory(emails);
+                    loadAndRenderHistory();
                 }
 
             } catch (error) {
-                console.error('Error generating email(s):', error);
                 showAlert('Error', `Failed to generate email(s): ${error.message}`);
             } finally {
                 setLoading(generateBtn, false);
             }
         }
 
-        /**
-         * Renders the list of generated emails in the UI.
-         */
         function displayGeneratedEmails(emails) {
+            emailListDiv.innerHTML = ''; // Clear previous results
+            currentEmails = emails; // Update current emails for copy all
             emails.forEach(email => {
                 const div = document.createElement('div');
                 div.className = 'flex items-center justify-between font-mono text-sm p-2 bg-gray-200 dark:bg-gray-800 rounded';
@@ -204,7 +250,7 @@
                 emailSpan.textContent = email;
                 
                 const copyBtn = document.createElement('button');
-                copyBtn.textContent = 'Copy';
+                copyBtn.innerHTML = 'Copy';
                 copyBtn.className = 'ml-4 text-xs text-blue-500 hover:underline flex-shrink-0';
                 copyBtn.onclick = () => copyToClipboard(email, copyBtn);
 
@@ -212,8 +258,63 @@
                 div.appendChild(copyBtn);
                 emailListDiv.appendChild(div);
             });
+            generatedEmailContainer.classList.remove('hidden');
         }
         
+        function clearResults() {
+            emailListDiv.innerHTML = '';
+            generatedEmailContainer.classList.add('hidden');
+            currentEmails = [];
+        }
+
+        function handleCopyAll() {
+            if(currentEmails.length > 0) {
+                const allEmailsText = currentEmails.join('\n');
+                copyToClipboard(allEmailsText, copyAllBtn);
+            }
+        }
+
+        function loadAndRenderHistory() {
+            const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_ID) || '[]');
+            historyList.innerHTML = '';
+            if (history.length > 0) {
+                historyContainer.classList.remove('hidden');
+                history.forEach((batch, index) => {
+                    const div = document.createElement('button');
+                    div.className = 'w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700';
+                    div.innerHTML = `<span class="font-semibold">${batch.length} emails</span> - <span class="text-gray-500 dark:text-gray-400 text-sm">${batch[0].substring(0, 20)}...</span>`;
+                    div.onclick = () => displayGeneratedEmails(batch);
+                    historyList.appendChild(div);
+                });
+            } else {
+                historyContainer.classList.add('hidden');
+            }
+        }
+
+        function saveToHistory(emails) {
+            let history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_ID) || '[]');
+            history.unshift(emails); // Add to the beginning
+            history = history.slice(0, 5); // Keep only the last 5 entries
+            localStorage.setItem(HISTORY_STORAGE_ID, JSON.stringify(history));
+        }
+
+        function handleClearHistory() {
+            localStorage.removeItem(HISTORY_STORAGE_ID);
+            loadAndRenderHistory();
+        }
+        
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            const newTheme = isDark ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+        
+        function updateThemeIcon(theme) {
+            lightIcon.classList.toggle('hidden', theme === 'dark');
+            darkIcon.classList.toggle('hidden', theme === 'light');
+        }
+
         function setLoading(button, isLoading) {
             const spinner = button.querySelector('.spinner');
             button.disabled = isLoading;
@@ -234,15 +335,17 @@
             textarea.select();
             try {
                  document.execCommand('copy');
-                 const originalText = buttonElement.textContent;
-                 buttonElement.textContent = 'Copied!';
-                 setTimeout(() => { buttonElement.textContent = originalText; }, 2000);
+                 const originalHTML = buttonElement.innerHTML;
+                 buttonElement.innerHTML = `<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                 setTimeout(() => { buttonElement.innerHTML = originalHTML; }, 2000);
             } catch (err) {
-                console.error('Failed to copy text: ', err);
-                showAlert('Copy Error', 'Failed to copy email to clipboard.');
+                showAlert('Copy Error', 'Failed to copy to clipboard.');
             }
             document.body.removeChild(textarea);
         }
+
+        // Initialize the app on script load
+        initialize();
 
     </script>
 </body>
