@@ -26,10 +26,10 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
-    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+    <div class="container mx-auto p-4 md:p-8 max-w-2xl">
         <header class="text-center mb-8">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">Gmailnator API Client</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-2">Generate temporary Gmail accounts and check their inboxes.</p>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Generate temporary Gmail accounts.</p>
         </header>
 
         <main>
@@ -40,9 +40,9 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Your API key is stored only in your browser.</p>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-8">
+            <div class="flex justify-center">
                 <!-- Generate Email Section -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md w-full">
                     <h2 class="text-2xl font-semibold mb-4">1. Generate Email</h2>
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-4">
@@ -72,40 +72,6 @@
                         <div id="emailList" class="space-y-2"></div>
                     </div>
                 </div>
-
-                <!-- Check Inbox Section -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                    <h2 class="text-2xl font-semibold mb-4">2. Check Inbox</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label for="emailToCheck" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
-                            <input type="email" id="emailToCheck" class="w-full mt-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg" placeholder="Enter generated email">
-                        </div>
-                         <button id="checkInboxBtn" class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300 disabled:bg-gray-400 flex items-center justify-center">
-                            <span id="inboxSpinner" class="hidden spinner mr-2"></span>
-                            Check Inbox
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Inbox Display Section -->
-            <div id="inboxResults" class="mt-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hidden">
-                 <h3 class="text-xl font-semibold mb-4">Inbox</h3>
-                 <div id="inboxMessages" class="space-y-4">
-                     <!-- Messages will be dynamically inserted here -->
-                 </div>
-            </div>
-
-             <!-- Message Modal -->
-            <div id="messageModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full">
-                    <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                        <h4 id="modalSubject" class="text-xl font-bold"></h4>
-                        <button id="closeModalBtn" class="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white text-3xl">&times;</button>
-                    </div>
-                    <div id="modalBody" class="p-6 max-h-[60vh] overflow-y-auto" style="white-space: pre-wrap;"></div>
-                </div>
             </div>
 
             <!-- Alert Modal -->
@@ -130,17 +96,6 @@
         const generatedEmailContainer = document.getElementById('generatedEmailContainer');
         const emailListDiv = document.getElementById('emailList');
         
-        const checkInboxBtn = document.getElementById('checkInboxBtn');
-        const inboxSpinner = checkInboxBtn.querySelector('.spinner');
-        const emailToCheckInput = document.getElementById('emailToCheck');
-        const inboxResultsDiv = document.getElementById('inboxResults');
-        const inboxMessagesDiv = document.getElementById('inboxMessages');
-
-        const messageModal = document.getElementById('messageModal');
-        const modalSubject = document.getElementById('modalSubject');
-        const modalBody = document.getElementById('modalBody');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        
         const alertModal = document.getElementById('alertModal');
         const alertTitle = document.getElementById('alertTitle');
         const alertBody = document.getElementById('alertBody');
@@ -151,8 +106,6 @@
 
         // --- Event Listeners ---
         generateBtn.addEventListener('click', handleGenerateEmail);
-        checkInboxBtn.addEventListener('click', handleCheckInbox);
-        closeModalBtn.addEventListener('click', () => messageModal.classList.add('hidden'));
         closeAlertBtn.addEventListener('click', () => alertModal.classList.add('hidden'));
 
         // --- Functions ---
@@ -212,9 +165,8 @@
                 const data = await response.json();
 
                 let emails = [];
-                // ** FIX: Check for `data.data` in bulk responses, which is consistent with other endpoints.
-                if (isBulk && data.data) {
-                    emails = data.data;
+                if (isBulk && Array.isArray(data)) {
+                    emails = data;
                 } else if (!isBulk && data.email) {
                     emails = [data.email];
                 } else {
@@ -224,7 +176,6 @@
 
                 if (emails.length > 0) {
                     displayGeneratedEmails(emails);
-                    emailToCheckInput.value = emails[0]; // Pre-fill with the first one
                     generatedEmailContainer.classList.remove('hidden');
                 }
 
@@ -257,78 +208,7 @@
                 emailListDiv.appendChild(div);
             });
         }
-
-
-        async function handleCheckInbox() {
-            const apiKey = apiKeyInput.value.trim();
-            const email = emailToCheckInput.value.trim();
-
-            if (!apiKey) {
-                showAlert('API Key Missing', 'Please enter your RapidAPI Key.');
-                return;
-            }
-            if (!email) {
-                showAlert('Input Required', 'Please enter an email address to check.');
-                return;
-            }
-
-            setLoading(checkInboxBtn, true);
-            inboxResultsDiv.classList.add('hidden');
-            inboxMessagesDiv.innerHTML = '';
-
-            const options = {
-                method: 'POST',
-                headers: {
-                    'content-type': 'application/json',
-                    'X-RapidAPI-Key': apiKey,
-                    'X-RapidAPI-Host': API_HOST
-                },
-                body: JSON.stringify({ email: email })
-            };
-
-            try {
-                const response = await fetch('https://' + API_HOST + '/message-list', options);
-                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-
-                if (data && data.data && data.data.length > 0) {
-                    displayEmails(data.data);
-                } else {
-                     inboxMessagesDiv.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No new emails found.</p>`;
-                }
-                inboxResultsDiv.classList.remove('hidden');
-            } catch (error) {
-                console.error('Error checking inbox:', error);
-                showAlert('Error', `Failed to check inbox: ${error.message}`);
-            } finally {
-                setLoading(checkInboxBtn, false);
-            }
-        }
-
-        function displayEmails(emails) {
-            inboxMessagesDiv.innerHTML = '';
-            emails.forEach(email => {
-                const emailDiv = document.createElement('div');
-                emailDiv.className = 'p-4 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700';
-                emailDiv.innerHTML = `
-                    <div class="font-semibold">${email.from}</div>
-                    <div class="text-gray-800 dark:text-gray-200">${email.subject}</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">${new Date(email.date).toLocaleString()}</div>
-                `;
-                emailDiv.addEventListener('click', () => showMessage(email));
-                inboxMessagesDiv.appendChild(emailDiv);
-            });
-        }
         
-        function showMessage(email) {
-             modalSubject.textContent = email.subject;
-             modalBody.textContent = email.content;
-             messageModal.style.display = 'flex';
-        }
-
         function setLoading(button, isLoading) {
             const spinner = button.querySelector('.spinner');
             button.disabled = isLoading;
