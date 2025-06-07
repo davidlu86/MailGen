@@ -74,7 +74,7 @@
             </div>
 
             <!-- Alert Modal -->
-            <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+            <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 text-center">
                    <h4 id="alertTitle" class="text-xl font-bold mb-4"></h4>
                    <p id="alertBody"></p>
@@ -119,7 +119,6 @@
         function showAlert(title, message) {
             alertTitle.textContent = title;
             alertBody.textContent = message;
-            // FIX: Use classList to remove the 'hidden' class to ensure the modal is displayed correctly.
             alertModal.classList.remove('hidden');
         }
 
