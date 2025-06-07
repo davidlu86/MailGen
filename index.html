@@ -51,7 +51,6 @@
                                 <select id="emailType" class="w-full mt-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg">
                                     <option value="2">Plus Trick</option>
                                     <option value="3">Dot Trick</option>
-                                    <option value="shuffled">Plus & Dot (Shuffled)</option>
                                 </select>
                             </div>
                              <div>
@@ -120,7 +119,8 @@
         function showAlert(title, message) {
             alertTitle.textContent = title;
             alertBody.textContent = message;
-            alertModal.style.display = 'flex';
+            // FIX: Use classList to remove the 'hidden' class to ensure the modal is displayed correctly.
+            alertModal.classList.remove('hidden');
         }
 
         /**
@@ -140,12 +140,8 @@
             const count = parseInt(emailCountSelect.value, 10);
             const type = emailTypeSelect.value;
             
-            let optionsArray;
-            if (type === 'shuffled') {
-                optionsArray = [2, 3]; // For shuffled, we include both options
-            } else {
-                optionsArray = [parseInt(type, 10)];
-            }
+            // Simplified options array since 'shuffled' is removed
+            const optionsArray = [parseInt(type, 10)];
             
             const isBulk = count > 1;
             const url = `https://${API_HOST}/${isBulk ? 'bulk-emails' : 'generate-email'}`;
@@ -170,7 +166,6 @@
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
                 
-                // On a successful request, save the API key to local storage
                 localStorage.setItem(API_KEY_STORAGE_ID, apiKey);
 
                 const data = await response.json();
