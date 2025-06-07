@@ -212,11 +212,13 @@
                 const data = await response.json();
 
                 let emails = [];
-                if (isBulk && data.emails) {
-                    emails = data.emails;
+                // ** FIX: Check for `data.data` in bulk responses, which is consistent with other endpoints.
+                if (isBulk && data.data) {
+                    emails = data.data;
                 } else if (!isBulk && data.email) {
                     emails = [data.email];
                 } else {
+                    console.error("Unexpected API Response:", data);
                     throw new Error('Invalid response structure from API.');
                 }
 
