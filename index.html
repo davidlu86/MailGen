@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -148,7 +148,7 @@
         // --- Initial Load ---
         function initialize() {
             // Load theme
-            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
             document.documentElement.classList.toggle('dark', savedTheme === 'dark');
             updateThemeIcon(savedTheme);
 
@@ -227,7 +227,6 @@
                 if (emails.length > 0) {
                     currentEmails = emails; // Store current batch
                     displayGeneratedEmails(emails);
-                    generatedEmailContainer.classList.remove('hidden');
                     saveToHistory(emails);
                     loadAndRenderHistory();
                 }
@@ -293,9 +292,21 @@
 
         function saveToHistory(emails) {
             let history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_ID) || '[]');
-            history.unshift(emails); // Add to the beginning
-            history = history.slice(0, 5); // Keep only the last 5 entries
-            localStorage.setItem(HISTORY_STORAGE_ID, JSON.stringify(history));
+            history.unshift(emails);
+            // Limit history to a reasonable size to avoid quota errors
+            if (history.length > 3) {
+                history = history.slice(0, 3);
+            }
+            try {
+                localStorage.setItem(HISTORY_STORAGE_ID, JSON.stringify(history));
+            } catch (e) {
+                if (e.name === 'QuotaExceededError' || (e instanceof DOMException && e.code === 22)) {
+                    console.warn('LocalStorage quota exceeded. Could not save to history.');
+                    showAlert('History Full', 'Could not save this batch to history because your browser\'s storage is full. Please clear your history.');
+                } else {
+                    throw e; // Rethrow other errors
+                }
+            }
         }
 
         function handleClearHistory() {
