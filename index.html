@@ -41,66 +41,100 @@
         .toast-fade-out {
             animation: fade-out 0.5s ease-out forwards;
         }
+
+        /* Stormy Night Color Palette */
+        :root {
+            --stormy-bg-dark: #2F3640;
+            --stormy-bg-light: #353B48;
+            --stormy-accent-teal: #00B894;
+            --stormy-accent-blue: #00BFFF;
+            --stormy-accent-crimson: #D63031;
+            --stormy-text-primary: #F5F6FA;
+            --stormy-text-secondary: #718093;
+        }
+
+        .dark {
+            --bg-primary: var(--stormy-bg-dark);
+            --bg-secondary: var(--stormy-bg-light);
+            --btn-primary: var(--stormy-accent-blue);
+            --btn-success: var(--stormy-accent-teal);
+            --btn-danger: var(--stormy-accent-crimson);
+            --text-primary: var(--stormy-text-primary);
+            --text-secondary: var(--stormy-text-secondary);
+            --border-color: #4A5568;
+        }
+        
+        .light {
+             --bg-primary: #F3F4F6; /* gray-100 */
+             --bg-secondary: #FFFFFF; /* white */
+             --btn-primary: #3B82F6; /* blue-600 */
+             --btn-success: #16A34A; /* green-600 */
+             --btn-danger: #DC2626; /* red-600 */
+             --text-primary: #1F2937; /* gray-800 */
+             --text-secondary: #6B7280; /* gray-500 */
+             --border-color: #D1D5DB; /* gray-300 */
+        }
+
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+<body class="transition-colors duration-300">
 
-    <div class="container mx-auto p-4 md:p-8 max-w-2xl">
+    <div class="container mx-auto p-4 md:p-8 max-w-2xl bg-[var(--bg-primary)]">
         <header class="text-center mb-8 relative">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">Gmailnator API Client</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-2">Generate temporary Gmail accounts.</p>
-            <button id="theme-toggle" class="absolute top-0 right-0 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700">
-                <svg id="theme-icon-light" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <svg id="theme-icon-dark" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            <h1 class="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">Gmailnator API Client</h1>
+            <p class="text-[var(--text-secondary)] mt-2">Generate temporary Gmail accounts.</p>
+            <button id="theme-toggle" class="absolute top-0 right-0 p-2 rounded-full text-[var(--text-secondary)] hover:bg-gray-200 dark:hover:bg-gray-700">
+                <svg id="theme-icon-light" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg id="theme-icon-dark" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
         </header>
 
         <main>
             <!-- API Key Input -->
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-8">
-                <label for="apiKey" class="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">RapidAPI Key</label>
-                <input type="password" id="apiKey" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your RapidAPI Key here">
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Your API key is saved in your browser's local storage for convenience.</p>
+            <div class="bg-[var(--bg-secondary)] p-6 rounded-xl shadow-md mb-8">
+                <label for="apiKey" class="block text-lg font-medium text-[var(--text-primary)] mb-2">RapidAPI Key</label>
+                <input type="password" id="apiKey" class="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Enter your RapidAPI Key here">
+                <p class="text-sm text-[var(--text-secondary)] mt-2">Your API key is saved in your browser's local storage for convenience.</p>
             </div>
 
             <div class="flex justify-center">
                 <!-- Generate Email Section -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md w-full">
-                    <h2 class="text-2xl font-semibold mb-4">Generate Emails</h2>
+                <div class="bg-[var(--bg-secondary)] p-6 rounded-xl shadow-md w-full">
+                    <h2 class="text-2xl font-semibold mb-4 text-[var(--text-primary)]">Generate Emails</h2>
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="emailType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Type</label>
-                                <select id="emailType" class="w-full mt-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg">
-                                    <option value="2"> + Gmail</option>
-                                    <option value="3"> . Gmail</option>
+                                <label for="emailType" class="block text-sm font-medium text-[var(--text-primary)]">Email Type</label>
+                                <select id="emailType" class="w-full mt-1 px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-lg">
+                                    <option value="2">Plus Trick</option>
+                                    <option value="3">Dot Trick</option>
                                 </select>
                             </div>
                              <div>
-                                <label for="emailCount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount</label>
-                                <select id="emailCount" class="w-full mt-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg">
+                                <label for="emailCount" class="block text-sm font-medium text-[var(--text-primary)]">Amount</label>
+                                <select id="emailCount" class="w-full mt-1 px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-lg">
                                     <option value="1">1 Email</option>
                                     <option value="5">5 Emails</option>
                                     <option value="10">10 Emails</option>
                                 </select>
                             </div>
                         </div>
-                        <button id="generateBtn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-gray-400 flex items-center justify-center">
+                        <button id="generateBtn" class="w-full bg-[var(--btn-primary)] text-white font-bold py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50 flex items-center justify-center">
                             <span id="generateSpinner" class="hidden spinner mr-2"></span>
                             Generate Email(s)
                         </button>
                     </div>
-                    <div id="generatedEmailContainer" class="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <div class="mt-4 p-4 bg-[var(--bg-primary)] rounded-lg">
                         <!-- Empty State Message -->
-                        <div id="emptyState" class="text-center text-gray-500 dark:text-gray-400">
+                        <div id="emptyState" class="text-center text-[var(--text-secondary)]">
                             Your generated emails will appear here.
                         </div>
                         <!-- Results Wrapper -->
                         <div id="resultsWrapper" class="hidden">
                            <div id="emailList" class="space-y-2"></div>
                            <div id="resultActions" class="mt-4 flex gap-2">
-                               <button id="copyAllBtn" class="flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 text-sm">Copy All</button>
-                               <button id="clearResultsBtn" class="flex-1 bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 text-sm">Clear Results</button>
+                               <button id="copyAllBtn" class="flex-1 bg-[var(--btn-success)] text-white font-bold py-2 px-4 rounded-lg text-sm">Copy All</button>
+                               <button id="clearResultsBtn" class="flex-1 bg-[var(--btn-danger)] text-white font-bold py-2 px-4 rounded-lg text-sm">Clear Results</button>
                            </div>
                         </div>
                     </div>
@@ -109,10 +143,10 @@
 
             <!-- Alert Modal -->
             <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 text-center">
-                   <h4 id="alertTitle" class="text-xl font-bold mb-4"></h4>
-                   <p id="alertBody"></p>
-                   <button id="closeAlertBtn" class="mt-6 bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">OK</button>
+                <div class="bg-[var(--bg-secondary)] rounded-xl shadow-xl max-w-md w-full p-6 text-center">
+                   <h4 id="alertTitle" class="text-xl font-bold text-[var(--text-primary)] mb-4"></h4>
+                   <p id="alertBody" class="text-[var(--text-primary)]"></p>
+                   <button id="closeAlertBtn" class="mt-6 bg-[var(--btn-primary)] text-white font-bold py-2 px-6 rounded-lg">OK</button>
                 </div>
             </div>
         </main>
@@ -128,7 +162,6 @@
         const generateSpinner = generateBtn.querySelector('.spinner');
         const emailTypeSelect = document.getElementById('emailType');
         const emailCountSelect = document.getElementById('emailCount');
-        const generatedEmailContainer = document.getElementById('generatedEmailContainer');
         const emptyState = document.getElementById('emptyState');
         const resultsWrapper = document.getElementById('resultsWrapper');
         const emailListDiv = document.getElementById('emailList');
@@ -140,11 +173,11 @@
         const alertBody = document.getElementById('alertBody');
         const closeAlertBtn = document.getElementById('closeAlertBtn');
         
+        const toastContainer = document.getElementById('toastContainer');
+        
         const themeToggle = document.getElementById('theme-toggle');
         const lightIcon = document.getElementById('theme-icon-light');
         const darkIcon = document.getElementById('theme-icon-dark');
-        
-        const toastContainer = document.getElementById('toastContainer');
 
         // --- API & Storage Configuration ---
         const API_HOST = 'gmailnator.p.rapidapi.com';
@@ -153,16 +186,14 @@
 
         // --- Initial Load ---
         function initialize() {
-            // Load theme
-            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-            updateThemeIcon(savedTheme);
-
             // Load API key
             const savedApiKey = localStorage.getItem(API_KEY_STORAGE_ID);
             if (savedApiKey) {
                 apiKeyInput.value = savedApiKey;
             }
+             // Load theme
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
         }
 
         // --- Event Listeners ---
@@ -182,7 +213,7 @@
 
         function showToast(message, type = 'error') {
             const toast = document.createElement('div');
-            const bgColor = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+            const bgColor = type === 'error' ? 'bg-[var(--btn-danger)]' : 'bg-[var(--btn-success)]';
             toast.className = `${bgColor} text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-md`;
             toast.textContent = message;
             toastContainer.appendChild(toast);
@@ -254,9 +285,10 @@
             currentEmails = emails; 
             emails.forEach(email => {
                 const div = document.createElement('div');
-                div.className = 'flex items-center justify-between font-mono text-sm p-2 bg-gray-200 dark:bg-gray-800 rounded';
+                div.className = 'flex items-center justify-between font-mono text-sm p-2 bg-[var(--bg-primary)] rounded';
                 
                 const emailSpan = document.createElement('span');
+                emailSpan.className = 'text-[var(--text-primary)]';
                 emailSpan.textContent = email;
                 
                 const copyBtn = document.createElement('button');
@@ -285,19 +317,20 @@
                 copyToClipboard(allEmailsText, copyAllBtn);
             }
         }
-        
-        function toggleTheme() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            const newTheme = isDark ? 'dark' : 'light';
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        }
-        
-        function updateThemeIcon(theme) {
-            lightIcon.classList.toggle('hidden', theme === 'dark');
-            darkIcon.classList.toggle('hidden', theme === 'light');
+
+        function setTheme(theme) {
+             document.documentElement.className = theme;
+             localStorage.setItem('theme', theme);
+             lightIcon.style.display = theme === 'dark' ? 'none' : 'block';
+             darkIcon.style.display = theme === 'dark' ? 'block' : 'none';
         }
 
+        function toggleTheme() {
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+        
         function setLoading(button, isLoading) {
             const spinner = button.querySelector('.spinner');
             button.disabled = isLoading;
@@ -319,7 +352,7 @@
             try {
                  document.execCommand('copy');
                  const originalHTML = buttonElement.innerHTML;
-                 buttonElement.innerHTML = `<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                 buttonElement.innerHTML = `<svg class="w-4 h-4 text-[var(--btn-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
                  setTimeout(() => { buttonElement.innerHTML = originalHTML; }, 2000);
             } catch (err) {
                 showToast('Failed to copy to clipboard.', 'error');
