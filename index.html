@@ -92,16 +92,6 @@
                 </div>
             </div>
 
-            <!-- History Section -->
-            <div id="historyContainer" class="mt-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-semibold">History</h2>
-                    <button id="clearHistoryBtn" class="text-sm text-red-500 hover:underline">Clear History</button>
-                </div>
-                <div id="historyList" class="space-y-2"></div>
-            </div>
-
-
             <!-- Alert Modal -->
             <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 text-center">
@@ -125,10 +115,6 @@
         const emailListDiv = document.getElementById('emailList');
         const copyAllBtn = document.getElementById('copyAllBtn');
         const clearResultsBtn = document.getElementById('clearResultsBtn');
-        
-        const historyContainer = document.getElementById('historyContainer');
-        const historyList = document.getElementById('historyList');
-        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
         const alertModal = document.getElementById('alertModal');
         const alertTitle = document.getElementById('alertTitle');
@@ -142,7 +128,6 @@
         // --- API & Storage Configuration ---
         const API_HOST = 'gmailnator.p.rapidapi.com';
         const API_KEY_STORAGE_ID = 'gmailnatorApiKey';
-        const HISTORY_STORAGE_ID = 'gmailnatorHistory';
         let currentEmails = [];
 
         // --- Initial Load ---
@@ -157,9 +142,6 @@
             if (savedApiKey) {
                 apiKeyInput.value = savedApiKey;
             }
-
-            // Load history
-            loadAndRenderHistory();
         }
 
         // --- Event Listeners ---
@@ -167,7 +149,6 @@
         closeAlertBtn.addEventListener('click', () => alertModal.classList.add('hidden'));
         clearResultsBtn.addEventListener('click', clearResults);
         copyAllBtn.addEventListener('click', handleCopyAll);
-        clearHistoryBtn.addEventListener('click', handleClearHistory);
         themeToggle.addEventListener('click', toggleTheme);
         
         // --- Functions ---
@@ -227,8 +208,6 @@
                 if (emails.length > 0) {
                     currentEmails = emails; // Store current batch
                     displayGeneratedEmails(emails);
-                    saveToHistory(emails);
-                    loadAndRenderHistory();
                 }
 
             } catch (error) {
@@ -271,47 +250,6 @@
                 const allEmailsText = currentEmails.join('\n');
                 copyToClipboard(allEmailsText, copyAllBtn);
             }
-        }
-
-        function loadAndRenderHistory() {
-            const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_ID) || '[]');
-            historyList.innerHTML = '';
-            if (history.length > 0) {
-                historyContainer.classList.remove('hidden');
-                history.forEach((batch, index) => {
-                    const div = document.createElement('button');
-                    div.className = 'w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700';
-                    div.innerHTML = `<span class="font-semibold">${batch.length} emails</span> - <span class="text-gray-500 dark:text-gray-400 text-sm">${batch[0].substring(0, 20)}...</span>`;
-                    div.onclick = () => displayGeneratedEmails(batch);
-                    historyList.appendChild(div);
-                });
-            } else {
-                historyContainer.classList.add('hidden');
-            }
-        }
-
-        function saveToHistory(emails) {
-            let history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_ID) || '[]');
-            history.unshift(emails);
-            // Limit history to a reasonable size to avoid quota errors
-            if (history.length > 3) {
-                history = history.slice(0, 3);
-            }
-            try {
-                localStorage.setItem(HISTORY_STORAGE_ID, JSON.stringify(history));
-            } catch (e) {
-                if (e.name === 'QuotaExceededError' || (e instanceof DOMException && e.code === 22)) {
-                    console.warn('LocalStorage quota exceeded. Could not save to history.');
-                    showAlert('History Full', 'Could not save this batch to history because your browser\'s storage is full. Please clear your history.');
-                } else {
-                    throw e; // Rethrow other errors
-                }
-            }
-        }
-
-        function handleClearHistory() {
-            localStorage.removeItem(HISTORY_STORAGE_ID);
-            loadAndRenderHistory();
         }
         
         function toggleTheme() {
